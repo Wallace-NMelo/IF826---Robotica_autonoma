@@ -69,16 +69,21 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
 
     float dx = goal[0] - pos[0];
     float dy = goal[1] - pos[1];
-    float rho, alpha, beta, kp=3, ka=8, kb=-1.5;
-    rho = math.sqrt(dx*dx) + dy*dy);
-    alpha = -pos[2] + math.atan2(deltay, deltax);
+    float rho, alpha, beta, kp=3000, ka=8000;
+    rho = sqrt((dx*dx) + (dy*dy));
+    alpha = -pos[2] + atan2(dy, dx);
     beta = -pos[2] - alpha;
 
-    float v = kp * rho * math.cos(alpha);
-    float w = (kp * math.sin(alpha) * math.cos(alpha)) + (ka * alpha);
+    float v = kp * rho * cos(alpha);
+    float w = (kp * sin(alpha) * cos(alpha)) + (ka * alpha);
     
-    *PhiR = -1;
-    *PhiL = 1;
+    if (abs(dx) < 0.05 && abs(dy) < 0.05) {
+        *PhiL = 0;
+        *phiR = 0;
+    }
+
+    *PhiR = (2*v + L*w) / 2 * RAIO;
+    *PhiL = (2*v - L*w) / 2 * RAIO;
 } 
 
 int main(int argc, char* argv[]) {
