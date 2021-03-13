@@ -66,24 +66,80 @@ inline double to_deg(double radians) {
 }
 
 void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, simxFloat* PhiR) {
-
+	float theta = pos[2];
     float dx = goal[0] - pos[0];
     float dy = goal[1] - pos[1];
-    float rho, alpha, beta, kp=1000, ka=8100, kb=-1.5;
-    rho = sqrt(dx*dx + dy*dy);
-    alpha = -pos[2] + atan2(dy, dx);
-    beta = -pos[2] - alpha;
+	int costa = 0;
+	float rho, alpha, beta, kp=1000, ka=8100, kb= -500;
+	rho = sqrt(dx*dx + dy*dy);	
+	beta = -(goal[2]-pos[2]);
+	printf("real theta = %f\n", pos[2]);
+	alpha = -theta + atan2(dy, dx);
+	if(theta> -M_PI_2 && theta <= M_PI_2 ){
+		if(alpha> -M_PI_2 && alpha <= M_PI_2 ){
+			
+		}else{
+			dy = -dy;
+			dx= -dx;
+			costa = 1;
+		}
+	}else{
+		printf("\ncaiu aq\n");
+		if(theta > 0){
+			theta = -(M_PI - theta);
+		}else{
+			theta = -(M_PI + theta);
+		}
+		
+		if(pos[2] > -M_PI && pos[2] <= -M_PI_2){
+			theta = -theta;
+		}
+		
+		dy = -dy;
+		dx= -dx;
+		alpha = -theta + atan2(dy, dx);
+		if(alpha> -M_PI_2 && alpha <= M_PI_2 ){
+		}else{
+			costa = 1;
+		}
+	}
+    alpha = -theta + atan2(dy, dx);
 	
-    float v = kp * rho * cos(alpha);
-    float w = (kp * sin(alpha) * cos(alpha)) + (ka * alpha);
-    
+	if(costa == 1){
+		beta = -beta;
+	}
+	
+	if(abs(beta) < 0.05){
+		beta = 0;
+	}
+	if(rho < 0.05){
+		rho = 0;
+		alpha = 0;
+	}
+	float v = kp * rho;
+	
+	
+	if(abs(dx) < 0.01 && abs(dy) < 0.01){
+		v = 0;
+		alpha = 0;
+	}
+    float w = ka*alpha + kb*beta;
+    	
+	
+	printf("\n dx = %f; dy = %f;alpha = %f; rho = %f ; beta = %f; theta = %f ; goal = %f ; atan = %f\n",dx,dy,alpha , rho, beta,theta, goal[2], atan2(dy,dx));
+	
     *PhiR = (2*v+w*L)/2*RAIO;
     *PhiL = (2*v-w*L)/2*RAIO;
 	
-	if(abs(dx) < 0.05 && abs(dy) < 0.05){
-		*PhiR = 0;
-		*PhiL = 0;
+	if(costa == 1){
+		*PhiR = (-2*v-w*L)/2*RAIO;
+		*PhiL = (-2*v+w*L)/2*RAIO;
 	}
+	
+	printf("\costa = %d; w = %f, beta = %f, kb = %f; termo errado = %f\n", costa, w, beta, kb, ka*alpha);
+	
+	//*PhiR = 0;
+    //*PhiL = 0;
 } 
 
 int main(int argc, char* argv[]) {
