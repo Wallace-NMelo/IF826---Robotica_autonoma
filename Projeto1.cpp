@@ -70,7 +70,7 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
     float dx = goal[0] - pos[0];
     float dy = goal[1] - pos[1];
 	int costa = 0;
-	float rho, alpha, beta, kp=1000, ka=8100, kb= -500;
+	float rho, alpha, beta, kp=1000, ka=8100, kb= -100;
 	rho = sqrt(dx*dx + dy*dy);	
 	beta = -(goal[2]-pos[2]);
 	printf("real theta = %f\n", pos[2]);
@@ -107,9 +107,10 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
 	
 	if(costa == 1){
 		beta = -beta;
+		alpha = -alpha;
 	}
 	
-	if(abs(beta) < 0.05){
+	if(abs(beta) < 0.09){
 		beta = 0;
 	}
 	if(rho < 0.05){
@@ -119,7 +120,7 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
 	float v = kp * rho;
 	
 	
-	if(abs(dx) < 0.01 && abs(dy) < 0.01){
+	if(rho < 0.05){
 		v = 0;
 		alpha = 0;
 	}
