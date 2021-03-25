@@ -68,13 +68,14 @@ inline double to_deg(double radians) {
 void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, simxFloat* PhiR) {
 	float theta = pos[2];
     float dx = goal[0] - pos[0];
-    float dy = goal[1] - pos[1];
-	int costa = 0;
-	float rho, alpha, beta, kp=1000, ka=8100, kb= -100;
+    float dy = goal[1] - pos[1], target;
+	int costa = 0, pBaixo = 0;
+	float rho, alpha, beta, kp=1000, ka=8000, kb= -3000, alpha_aux;
 	rho = sqrt(dx*dx + dy*dy);	
-	beta = -(goal[2]-pos[2]);
+	target = goal[2];
 	printf("real theta = %f\n", pos[2]);
 	alpha = -theta + atan2(dy, dx);
+	alpha_aux = alpha;
 	if(theta> -M_PI_2 && theta <= M_PI_2 ){
 		if(alpha> -M_PI_2 && alpha <= M_PI_2 ){
 			
@@ -84,17 +85,18 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
 			costa = 1;
 		}
 	}else{
-		printf("\ncaiu aq\n");
 		if(theta > 0){
-			theta = -(M_PI - theta);
+			theta = (M_PI - theta);
 		}else{
-			theta = -(M_PI + theta);
+			theta = (M_PI + theta);
 		}
 		
 		if(pos[2] > -M_PI && pos[2] <= -M_PI_2){
 			theta = -theta;
 		}
 		
+		theta = -theta;
+		pBaixo = 1;
 		dy = -dy;
 		dx= -dx;
 		alpha = -theta + atan2(dy, dx);
@@ -105,29 +107,94 @@ void controle_movimento(simxFloat pos[3], simxFloat goal[3], simxFloat* PhiL, si
 	}
     alpha = -theta + atan2(dy, dx);
 	
+	
 	if(costa == 1){
-		beta = -beta;
 		alpha = -alpha;
 	}
+	else{
+	}
 	
-	if(abs(beta) < 0.09){
-		beta = 0;
-	}
 	if(rho < 0.05){
-		rho = 0;
 		alpha = 0;
+		rho = 0;
 	}
+	
+	if(goal[2] >-M_PI && goal[2] < -M_PI_2){
+		target = -(M_PI + goal[2]); 
+	}
+	
+	
+	if(goal[2] <= M_PI && goal[2] > M_PI_2){
+		target = (M_PI - goal[2]); 
+	}
+	
+	if(pBaixo == 1){
+		theta = -(theta); 
+	}
+	/*
+	if(pos[2] > -M_PI_2 && pos[2] <= 0){
+		if(costa == 0){
+			beta = -goal[2] + theta;
+		}else{
+			beta =  -(-goal[2] + theta);
+		}
+		
+	}
+	if(pos[2] > 0 && pos[2] <= M_PI_2){
+		if(costa == 0){
+			beta = -goal[2] + theta;
+		}else{
+			beta =  -(-goal[2] + theta);
+		}
+	}
+	if(pos[2] > M_PI_2 && pos[2] <= M_PI){
+		if(costa == 0){
+			beta = (-goal[2] + (M_PI - theta));
+		}else{
+			beta =  -(-goal[2] - theta);
+		}
+	}
+	else{
+		if(pos[2] > 0 && pos[2] <= M_PI_2 || pos[2] > -M_PI_2 && pos[2] <= 0 || pos[2] > M_PI_2 && pos[2] <= M_PI){
+			
+		}else{
+			beta = 0;
+		}
+	}*/
+	
+	if(costa == 0){
+		beta =  -target + pos[2] + alpha;
+	}else{
+		beta =  target - pos[2] - alpha;
+	}
+	
+	if(goal[2] > M_PI_2 && goal[2] <= M_PI){
+		beta =  -target + pos[2] -alpha - M_PI_2;
+		if(pos[2] > M_PI_2 && pos[2] < M_PI){
+			beta =  target - M_PI + pos[2] - alpha;
+		}
+		if(costa == 1){
+			beta = -beta;
+		}
+		
+	}
+	if(goal[2] <= -M_PI_2 && goal[2] > -M_PI){
+		beta =  target - pos[2] - alpha + M_PI_2;
+		if(pos[2] > M_PI_2 && pos[2] < M_PI){
+			beta = - target + M_PI - pos[2] - alpha;
+		}
+		if(costa == 1){
+			beta = -beta;
+		}
+	}
+	
 	float v = kp * rho;
 	
 	
-	if(rho < 0.05){
-		v = 0;
-		alpha = 0;
-	}
     float w = ka*alpha + kb*beta;
     	
 	
-	printf("\n dx = %f; dy = %f;alpha = %f; rho = %f ; beta = %f; theta = %f ; goal = %f ; atan = %f\n",dx,dy,alpha , rho, beta,theta, goal[2], atan2(dy,dx));
+	printf("\n dx = %f; dy = %f;alpha = %f; rho = %f ; beta = %f; theta = %f ; goal = %f ; atan = %f\n",dx,dy,alpha , rho, beta,theta, target, atan2(dy,dx));
 	
     *PhiR = (2*v+w*L)/2*RAIO;
     *PhiL = (2*v-w*L)/2*RAIO;
