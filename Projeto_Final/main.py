@@ -42,6 +42,16 @@ def main():
         pos = get_position(clientID, robot)  # [x,y,theta] in [cm cm rad]
         print(f'Robot position: [{pos[0]:.2f} {pos[1]:.2f} {to_deg(pos[2]):.2f}]')
 
+        # Number of times we will read the sensor
+        n_samples = 500
+        _, _ = sim.simxGetStringSignal(clientID, 'scanRanges', sim.simx_opmode_streaming)
+        error_code, scan_values = sim.simxGetStringSignal(clientID, 'scanRanges', sim.simx_opmode_buffer)
+        distances = np.array([np.array(sim.simxUnpackFloats(scan_values)) for i in range(n_samples)])
+        # add some noise
+        for j in range(distances.shape[1]):
+            distances[:, j] = distances[:, j] + 1 * np.random.randn()
+        plt.plot(distances[0])
+        plt.show()
 
 if __name__ == "__main__":
     main()
