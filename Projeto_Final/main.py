@@ -30,7 +30,7 @@ def main():
     clientID = sim.simxStart('127.0.0.1', 19999, True, True, 5000, 5)  # Connect to CoppeliaSim
     if clientID != -1:
         print('Connected to remote API server')
-        # Get handles for robot parts, actuators and sensors:
+        # Get handles for robot parts:
         res, motorRight = sim.simxGetObjectHandle(clientID, 'Pioneer_p3dx_rightMotor', sim.simx_opmode_oneshot_wait)
         res, motorLeft = sim.simxGetObjectHandle(clientID, 'Pioneer_p3dx_leftMotor', sim.simx_opmode_oneshot_wait)
         res, robot = sim.simxGetObjectHandle(clientID, 'Pioneer_p3dx', sim.simx_opmode_oneshot_wait)
@@ -52,6 +52,7 @@ def main():
             distances[:, j] = distances[:, j] + 1 * np.random.randn()
         plt.plot(distances[0])
         plt.show()
+
 
 if __name__ == "__main__":
     main()
