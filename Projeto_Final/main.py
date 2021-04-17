@@ -5,11 +5,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
+class Kalman:
+    """
+    The Kalman filter is a state estimator that works on a prediction-correction basis.
+    """
+
+    def __init__(self):
+        pass
+
+    def prediction(self):
+        pass
+
+    def correction(self):
+        pass
+
+
 def to_deg(radians):
     return radians * (180 / np.pi)
 
 
-def get_position(clientID, object_handle):
+def getPosition(clientID, object_handle):
     ret, pos = sim.simxGetObjectPosition(clientID, object_handle, -1, sim.simx_opmode_oneshot_wait)
     if ret > 0:
         print("Error reading object position\n")
@@ -39,7 +54,7 @@ def main():
         sys.exit('Could not connect')
 
     while sim.simxGetConnectionId(clientID) != -1:
-        pos = get_position(clientID, robot)  # [x,y,theta] in [cm cm rad]
+        pos = getPosition(clientID, robot)  # [x,y,theta] in [cm cm rad]
         print(f'Robot position: [{pos[0]:.2f} {pos[1]:.2f} {to_deg(pos[2]):.2f}]')
 
         # Number of times we will read the sensor
@@ -48,8 +63,8 @@ def main():
         error_code, scan_values = sim.simxGetStringSignal(clientID, 'scanRanges', sim.simx_opmode_buffer)
         distances = np.array([np.array(sim.simxUnpackFloats(scan_values)) for i in range(n_samples)])
         # add some noise
-        for j in range(distances.shape[1]):
-            distances[:, j] = distances[:, j] + 1 * np.random.randn()
+        # for j in range(distances.shape[1]):
+        #     distances[:, j] = distances[:, j] + 1 * np.random.randn()
         plt.plot(distances[0])
         plt.show()
 
