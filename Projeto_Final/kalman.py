@@ -3,6 +3,7 @@ import numpy as np
 L = 0.33
 k_r = 2
 k_l = 2
+RADIUS = 0.0975
 
 
 class Kalman:
@@ -16,8 +17,8 @@ class Kalman:
 
         self.dPhiL = dPhiL
         self.dPhiR = dPhiR
-        self.deltaTheta = (dPhiL - dPhiR) / L
-        self.deltaS = (dPhiL + dPhiR) / 2
+        self.deltaTheta = (dPhiL*RADIUS - dPhiR*RADIUS) / L
+        self.deltaS = (dPhiL*RADIUS + dPhiR*RADIUS) / 2
 
         self.prev_pos = np.array(prev_pos)
 
@@ -27,8 +28,8 @@ class Kalman:
                                  self.deltaTheta
                                  ])
         updatePos = self.prev_pos + updatedArray
-        # matrix1 = np.array([[k_r * abs(self.deltaSr)], [k_l * abs(self.deltaSl)]])
-        return updatePos
+        matrix1 = np.array([[k_r * abs(self.dPhiL*RADIUS), 0], [0, k_l * abs(self.dPhiR*RADIUS)]])
+        return updatePos, matrix1
 
     def correction(self):
         pass

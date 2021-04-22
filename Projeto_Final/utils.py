@@ -1,5 +1,5 @@
 import numpy as np
-
+import math
 import sim
 
 
@@ -17,13 +17,22 @@ def readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev):
 
 
 def getSmallestAngle(a, b):
-    diff = a - b
-    if diff > 180:
-        diff -= 360
-    elif diff < -180:
-        diff += 360
+    diff = toPositiveAngle(a) - toPositiveAngle(b)
+    if diff > np.pi:
+        diff -= 2*np.pi
+    elif diff < -np.pi:
+        diff += 2*np.pi
 
-    return abs(diff)
+    return diff
+
+
+def toPositiveAngle(angle):
+    angle = math.fmod(angle, 2*np.pi)
+
+    while angle < 0:
+        angle += 2*np.pi
+
+    return angle
 
 
 def getSimTimeMs(clientID):
