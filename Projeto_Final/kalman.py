@@ -31,5 +31,5 @@ class Kalman:
         matrix1 = np.array([[k_r * abs(self.dPhiL*RADIUS), 0], [0, k_l * abs(self.dPhiR*RADIUS)]])
         return updatePos, matrix1
 
-    def correction(self):
+    def correction(self):#falta fazer essa parte
         pass
