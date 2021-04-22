@@ -3,6 +3,29 @@ import numpy as np
 import sim
 
 
+def readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev):
+    ret, l_rot_cur = sim.simxGetJointPosition(clientID, leftMotor, sim.simx_opmode_oneshot_wait)
+    ret, r_rot_cur = sim.simxGetJointPosition(clientID, rightMotor, sim.simx_opmode_oneshot_wait)
+
+    dPhiL = getSmallestAngle(l_rot_cur, l_rot_prev)
+    dPhiR = getSmallestAngle(r_rot_cur, r_rot_prev)
+
+    l_rot_prev = l_rot_cur
+    r_rot_prev = r_rot_cur
+
+    return dPhiL, dPhiR, l_rot_prev, r_rot_prev
+
+
+def getSmallestAngle(a, b):
+    diff = a - b
+    if diff > 180:
+        diff -= 360
+    elif diff < -180:
+        diff += 360
+
+    return abs(diff)
+
+
 def getSimTimeMs(clientID):
     return sim.simxGetLastCmdTime(clientID)
 
