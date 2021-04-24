@@ -7,29 +7,48 @@ RADIUS = 0.0975
 
 
 class Kalman:
-    def __init__(self, dPhiL, dPhiR, prev_pos):
-        # deltaX = (next_pos[0] - prev_pos[0])
-        # deltaY = (next_pos[1] - prev_pos[1])
-        # deltaT = (next_pos[2] - prev_pos[2])
-        # deltaS = deltaX / np.cos(next_pos[2] + deltaT / 2)
-        # deltaSl = (2 * deltaS - L * deltaT) / 2
-        # deltaSr = (2 * deltaS + L * deltaT) / 2
-
+    def __init__(self, dPhiL, dPhiR):
         self.dPhiL = dPhiL
         self.dPhiR = dPhiR
-        self.deltaTheta = (dPhiL*RADIUS - dPhiR*RADIUS) / L
-        self.deltaS = (dPhiL*RADIUS + dPhiR*RADIUS) / 2
+        self.deltaTheta = (dPhiL * RADIUS - dPhiR * RADIUS) / L
+        self.deltaS = (dPhiL * RADIUS + dPhiR * RADIUS) / 2
 
-        self.prev_pos = np.array(prev_pos)
-
-    def prediction(self):
-        updatedArray = np.array([self.deltaS * np.cos(self.prev_pos[2] + self.deltaTheta / 2),
-                                 self.deltaS * np.sin(self.prev_pos[2] + self.deltaTheta / 2),
+    def prediction(self, prev_pos, prev_cov):
+        updatedArray = np.array([self.deltaS * np.cos(prev_pos[2] + self.deltaTheta / 2),
+                                 self.deltaS * np.sin(prev_pos[2] + self.deltaTheta / 2),
                                  self.deltaTheta
                                  ])
-        updatePos = self.prev_pos + updatedArray
-        matrix1 = np.array([[k_r * abs(self.dPhiL*RADIUS), 0], [0, k_l * abs(self.dPhiR*RADIUS)]])
-        return updatePos, matrix1
+        updatePos = prev_pos + updatedArray
+        Q = np.array([[k_r * abs(self.dPhiL * RADIUS), 0], [0, k_l * abs(self.dPhiR * RADIUS)]])
+        Fp, Frl = self.jacobians(prev_pos)
+        est_cov = Fp.dot(prev_cov).dot(Fp.T) + Frl.dot(Q).dot(Frl.T)
+
+        return updatePos, est_cov
+
+    def jacobians(self, prev_pos):
+        Fp = np.array([[1, 0, -self.deltaS * np.sin(prev_pos[2] + self.deltaTheta / 2)],
+                       [0, 1, self.deltaS * np.cos(prev_pos[2] + self.deltaTheta / 2)],
+                       [0, 0, 1]])
+
+        a00 = 0.5 * np.cos(prev_pos[2] + self.deltaTheta / 2) - (self.deltaS / 2 * L) * np.sin(
+            prev_pos[2] + self.deltaTheta / 2)
+
+        a01 = 0.5 * np.cos(prev_pos[2] + self.deltaTheta / 2) + (self.deltaS / 2 * L) * np.sin(
+            prev_pos[2] + self.deltaTheta / 2)
+
+        a10 = 0.5 * np.sin(prev_pos[2] + self.deltaTheta / 2) + (self.deltaS / 2 * L) * np.cos(
+            prev_pos[2] + self.deltaTheta / 2)
+
+        a11 = 0.5 * np.sin(prev_pos[2] + self.deltaTheta / 2) - (self.deltaS / 2 * L) * np.cos(
+            prev_pos[2] + self.deltaTheta / 2)
+
+        a20 = 1 / L
+
+        a21 = -1 / L
+
+        Frl = np.array([[a00, a01], [a10, a11], [a20, a21]])
+
+        return Fp, Frl
 
     def correction(self):
         pass

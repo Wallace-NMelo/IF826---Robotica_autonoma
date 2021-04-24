@@ -1,6 +1,15 @@
-import numpy as np
 import math
+
+import numpy as np
+
 import sim
+
+
+def readObservations(clientID):
+    returnCode, sensorData = sim.simxGetStringSignal(clientID, "points", sim.simx_opmode_streaming)
+    measureData = sim.simxUnpackFloats(sensorData)
+
+    return measureData
 
 
 def readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev):
@@ -19,18 +28,18 @@ def readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev):
 def getSmallestAngle(a, b):
     diff = toPositiveAngle(a) - toPositiveAngle(b)
     if diff > np.pi:
-        diff -= 2*np.pi
+        diff -= 2 * np.pi
     elif diff < -np.pi:
-        diff += 2*np.pi
+        diff += 2 * np.pi
 
     return diff
 
 
 def toPositiveAngle(angle):
-    angle = math.fmod(angle, 2*np.pi)
+    angle = math.fmod(angle, 2 * np.pi)
 
     while angle < 0:
-        angle += 2*np.pi
+        angle += 2 * np.pi
 
     return angle
 
