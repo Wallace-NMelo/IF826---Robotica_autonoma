@@ -1,4 +1,3 @@
-import sim
 from kalman import Kalman
 from robot import Robot
 from utils import *
@@ -19,8 +18,11 @@ def main():
                                                      "Pioneer_p3dx_rightMotor", sim.simx_opmode_oneshot_wait)
     robot = Robot(clientID, 2)
     returnCode, robotHandle = sim.simxGetObjectHandle(clientID, "Pioneer_p3dx", sim.simx_opmode_oneshot_wait)
+    returnCode, sensorData = sim.simxGetStringSignal(clientID, "scanRanges", sim.simx_opmode_streaming)
     l_rot_prev, r_rot_prev = 0, 0
+    # Initial state and initial covariance matrix
     prevPos = getPosition(clientID, robotHandle)
+    prevCov = np.zeros((3, 3))
     while sim.simxGetConnectionId(clientID) != -1:
         time = getSimTimeMs(clientID)
         speedMotors = robot.breit_controller(clientID)
@@ -28,13 +30,15 @@ def main():
         sim.simxSetJointTargetVelocity(clientID, rightMotor, speedMotors[1], sim.simx_opmode_streaming)
         if (time % 2000) == 0:
             dPhiL, dPhiR, l_rot_prev, r_rot_prev = readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev)
-            kalman_filter = Kalman(dPhiL, dPhiR, prevPos)
-            updatedPos, matrix = kalman_filter.prediction()
+            kalman_filter = Kalman(dPhiL, dPhiR)
+            estimatedPos, estimatedCov = kalman_filter.prediction(prevPos, prevCov)
             truePos = getPosition(clientID, robotHandle)
-            prevPos = updatedPos
-            print(matrix)
+            prevPos = estimatedPos
+            prevCov = estimatedCov
+            # Observations
+            measureData = readObservations(clientID)
+            print(measureData)
 
 
 if __name__ == "__main__":
     main()
-
