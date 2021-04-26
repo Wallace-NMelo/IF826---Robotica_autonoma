@@ -26,14 +26,17 @@ def main():
     prevPos = getPosition(clientID, robotHandle)
     prevCov = np.zeros((3, 3))
     a = 0
+
     while sim.simxGetConnectionId(clientID) != -1:
+
         time = getSimTimeMs(clientID)
+        print(time)
         speedMotors = robot.breit_controller(clientID)
         sim.simxSetJointTargetVelocity(clientID, leftMotor, 0, sim.simx_opmode_streaming)
         sim.simxSetJointTargetVelocity(clientID, rightMotor, 0, sim.simx_opmode_streaming)
         #sim.simxSetJointTargetVelocity(clientID, leftMotor, speedMotors[0], sim.simx_opmode_streaming)
         #sim.simxSetJointTargetVelocity(clientID, rightMotor, speedMotors[1], sim.simx_opmode_streaming)
-        if (time % 2000) == 0:
+        if (time % 1) == 0:
             dPhiL, dPhiR, l_rot_prev, r_rot_prev = readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev)
             kalman_filter = Kalman(dPhiL, dPhiR)
             estimatedPos, estimatedCov = kalman_filter.prediction(prevPos, prevCov)
@@ -42,12 +45,10 @@ def main():
             prevCov = estimatedCov
             # Observations
             measuredPPosition = readObservations(clientID)
-            print(measuredPPosition)
             x,y = lidar.arrangeData(measuredPPosition)
-            print(x)
-            print(y)
             plt.plot(x,y,'o')
             plt.show()
+            lidar.split_and_merge(x,y)
             a = a + 1
         if(a == 2):
             break
