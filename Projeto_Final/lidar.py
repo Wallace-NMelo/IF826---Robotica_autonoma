@@ -109,6 +109,11 @@ def split(x, y):
             yout.append(y)
     return xout, yout
 
+def point_dist(x,y):
+    pass
+
+def merge(x, y):
+    pass
 
 def merge(xout, yout):
     print("line x: ", xout)
@@ -123,3 +128,4 @@ def split_and_merge(x, y):
         if len(x[i]) > 1:
             plt.scatter(x[i], y[i])
             plt.show()
+
