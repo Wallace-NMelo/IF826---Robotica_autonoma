@@ -112,12 +112,17 @@ def split(x, y):
             yout.append(y)
     return xout, yout
 
+def point_dist(x,y):
+    pass
+
+def merge(x, y):
+    pass
 
 def split_and_merge(x, y):
     # plot_SAM(x, y)
     print(len(x))
     x, y = split(x, y)
-    print(len(y))
+    print(x)
     if(len(x) > 1):
         for i in range(len(x)):
             if(len(x[i]) > 1):
