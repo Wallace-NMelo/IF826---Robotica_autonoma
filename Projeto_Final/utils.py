@@ -67,3 +67,7 @@ def getPosition(clientID, object_handle, add_noise=False):
         noise = np.random.normal(0, 0.1, len(pos))
         pos = pos + noise
     return pos
+
+
+def toPolar(x, y):
+    return np.sqrt(np.square(x) + np.square(y)), np.arctan(y / x)
