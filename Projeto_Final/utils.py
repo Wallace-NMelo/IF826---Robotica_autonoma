@@ -1,9 +1,9 @@
 import math
 
-import numpy as np
 import matplotlib.pyplot as plt
-import sim
+import numpy as np
 
+import sim
 
 def readObservations(clientID):
     returnCode, sensorData = sim.simxGetStringSignal(clientID, "points", sim.simx_opmode_streaming)
@@ -74,7 +74,6 @@ def toPolar(x, y):
 
 
 def plot_animation(estPosition, truePosition, show_animation, hxEst, hxTrue=None):
-
     if show_animation:
         plt.cla()
         # for stopping simulation with the esc key.
