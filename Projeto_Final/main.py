@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 import lidar
@@ -30,13 +31,13 @@ def main():
     returnCode, sensorData = sim.simxGetStringSignal(clientID, "scanRanges", sim.simx_opmode_streaming)
     l_rot_prev, r_rot_prev = 0, 0
     # Initial state and initial covariance matrix
-    prevPosition = getPosition(clientID, robotHandle)
+    prevPosition = np.matrix(getPosition(clientID, robotHandle)).T
     prevErrorPosition = np.zeros((3, 3))
     a = 0
     g = 0.5
 
     while sim.simxGetConnectionId(clientID) != -1:
-
+        v = np.zeros((2,1))
         time = getSimTimeMs(clientID)
         print(time)
         speedMotors = robot.breit_controller(clientID)
@@ -50,20 +51,31 @@ def main():
 
             predPosition, predError = kalman_filter.prediction(prevPosition, prevErrorPosition)
             # truePos = getPosition(clientID, robotHandle)
-            prevPosition = predPosition
-            prevErrorPosition = predError
+            
+            
 
             # Observations
             observedFeatures = readObservations(clientID)
             x, y = lidar.arrangeData(observedFeatures)
             lidarInputs = lidar.split_and_merge(x, y)
             distances = []
-            # for i in range(len(lidarInputs)):
-            #     for j in range(len(mapInputs)):
-            #         estPosition, estError, y, S = kalman_filter.update(predPosition, predError, mapInputs[j, :],
-            #                                                            lidarInputs[i, :])
-            #         d = y.T @ np.linalg(S) @ y
-            #         distances.append(d)
+            d_ant = 10000000000
+            S = np.zeros((2,2))
+            H = np.zeros((2,3))
+            for i in range(len(lidarInputs)):
+                for j in range(len(mapInputs)):
+                    y, S, H = kalman_filter.getV(predPosition, predError, mapInputs[j, :],
+                                                                       lidarInputs[i, :])
+                    d = y.T @ np.linalg.pinv(S) @ y
+                    if d < g**2 and d < d_ant:
+                        v = y
+                        d_ant = d
+            
+            estPosition, estError, y, S = kalman_filter.update(predPosition, predError, v,S,H)
+            
+            prevPosition = estPosition
+            prevErrorPosition = estError      
+
 
         #     x, y = lidar.arrangeData(measuredPPosition)
         #     plt.plot(x, y, 'o')
