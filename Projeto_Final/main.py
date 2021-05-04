@@ -11,7 +11,6 @@ from utils import *
 current_path = Path.cwd()
 mapInputs = pd.read_csv(current_path.joinpath('map_lines.csv'))
 mapInputs = mapInputs.to_numpy()
-show_animation = False
 
 
 def main():
@@ -58,6 +57,7 @@ def main():
             predPosition, predError = kalman_filter.prediction(prevPosition, prevErrorPosition)
             truePos = np.matrix(getPosition(clientID, robotHandle)).T
             odPosition, odError = odometry.prediction(odPrevPos, odPrevError)
+            odPosition[2] = truePos[2]
 
             odPrevPos = odPosition
             odPrevError = odError
@@ -84,7 +84,8 @@ def main():
 
             prevPosition = estPosition
             prevErrorPosition = estError
-            print(f'Error (True Position - Estimated Position = \n{truePos - estPosition}) \n')
+            print(f'Odometry position (x) - Estimated position (x) = {float(odPosition[0] - estPosition[0])}\n')
+            print(f'Odometry position (y) - Estimated position (y) = {float(odPosition[1] - estPosition[1])}\n')
             count = 0
 
         count += 1
