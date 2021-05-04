@@ -11,6 +11,7 @@
 - To show the results obtained through the split-and-merge algorithm we put some images, in the **Extracted Points** folder from lines extracted by Lidar.
 
 
+
 ### Participants:
 - Arthur de Andrade Almeida
 - Adriel Filipe Lins Alves da Silva
