@@ -1,10 +1,11 @@
 from pathlib import Path
 
 import pandas as pd
+
 import lidar
 from kalman import Kalman
-from utils import *
 from robot import Robot
+from utils import *
 
 # Path of current directory
 current_path = Path.cwd()
@@ -75,7 +76,7 @@ def main():
                     y, S, H = kalman_filter.getInnovation(predPosition, predError, mapInputs[j, :], lidarInputs[:, i])
                     d = y.T @ np.linalg.pinv(S) @ y
                     if d < g ** 2 and d < d_ant:
-                        #print("=============== MATCH ================\n")
+                        # print("=============== MATCH ================\n")
                         v = y
                         d_ant = d
 
