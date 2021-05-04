@@ -7,8 +7,9 @@
 
 
 ### Results:
-- In the main.py we are printing the error between True position and Estimated position.
-- To show the results obtained through the split-and-merge algorithm we put some images, in the `Extracted Points` folder from lines extracted by Lidar.
+- In the main.py we are printing the error between Odometry position position and Estimated position.
+- To show the results obtained through the split-and-merge algorithm we put some images, in the **Extracted Points** folder from lines extracted by Lidar.
+
 
 
 ### Participants:
