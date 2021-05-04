@@ -26,7 +26,7 @@ def main():
                                                     "Pioneer_p3dx_leftMotor", sim.simx_opmode_oneshot_wait)
     returnCode, rightMotor = sim.simxGetObjectHandle(clientID,
                                                      "Pioneer_p3dx_rightMotor", sim.simx_opmode_oneshot_wait)
-    robot = Robot(clientID, 2)
+    # robot = Robot(clientID, 2)
     returnCode, robotHandle = sim.simxGetObjectHandle(clientID, "Pioneer_p3dx", sim.simx_opmode_oneshot_wait)
     returnCode, sensorData = sim.simxGetStringSignal(clientID, "scanRanges", sim.simx_opmode_streaming)
     l_rot_prev, r_rot_prev = 0, 0
@@ -35,24 +35,21 @@ def main():
     prevErrorPosition = np.zeros((3, 3))
     a = 0
     g = 0.5
-
+    hxEst, hxTrue = np.zeros(shape=(3, 1)), prevPosition
+    count = 0
     while sim.simxGetConnectionId(clientID) != -1:
-        v = np.zeros((2,1))
-        time = getSimTimeMs(clientID)
-        print(time)
-        speedMotors = robot.breit_controller(clientID)
-        sim.simxSetJointTargetVelocity(clientID, leftMotor, speedMotors[0], sim.simx_opmode_streaming)
-        sim.simxSetJointTargetVelocity(clientID, rightMotor, speedMotors[1], sim.simx_opmode_streaming)
-        if (time % 1) == 0:
+        v = np.zeros((2, 1))
+        # speedMotors = robot.breit_controller(clientID)
+        # sim.simxSetJointTargetVelocity(clientID, leftMotor, speedMotors[0], sim.simx_opmode_streaming)
+        # sim.simxSetJointTargetVelocity(clientID, rightMotor, speedMotors[1], sim.simx_opmode_streaming)
+        if count == 100:
             # Dead reckoning
             dPhiL, dPhiR, l_rot_prev, r_rot_prev = readOdometry(clientID, leftMotor, rightMotor, l_rot_prev, r_rot_prev)
             # Initialize Kalman
             kalman_filter = Kalman(dPhiL, dPhiR)
 
             predPosition, predError = kalman_filter.prediction(prevPosition, prevErrorPosition)
-            # truePos = getPosition(clientID, robotHandle)
-            
-            
+            truePos = getPosition(clientID, robotHandle)
 
             # Observations
             observedFeatures = readObservations(clientID)
@@ -60,24 +57,30 @@ def main():
             lidarInputs = lidar.split_and_merge(x, y)
             distances = []
             d_ant = 10000000000
-            S = np.zeros((2,2))
-            H = np.zeros((2,3))
+            S = np.zeros((2, 2))
+            H = np.zeros((2, 3))
             for i in range(len(lidarInputs)):
                 for j in range(len(mapInputs)):
                     y, S, H = kalman_filter.getV(predPosition, predError, mapInputs[j, :],
-                                                                       lidarInputs[i, :])
+                                                 lidarInputs[i, :])
                     d = y.T @ np.linalg.pinv(S) @ y
-                    if d < g**2 and d < d_ant:
+                    if d < g ** 2 and d < d_ant:
                         v = y
                         d_ant = d
-            
-            estPosition, estError, y, S = kalman_filter.update(predPosition, predError, v,S,H)
-            
+
+            estPosition, estError, y, S = kalman_filter.update(predPosition, predError, v, S, H)
+
             prevPosition = estPosition
-            prevErrorPosition = estError      
+            prevErrorPosition = estError
+            print(f'True Position: {truePos} \n Estimated position: {estPosition}')
+            count = 0
+            hxEst = np.hstack((hxEst, estPosition))
+            # hxTrue = np.hstack((hxTrue, truePos))
+            plot_animation(estPosition, truePos, show_animation=True, hxEst=hxEst)
+        count += 1
 
 
-        #     x, y = lidar.arrangeData(measuredPPosition)
+            #     x, y = lidar.arrangeData(measuredPPosition)
         #     plt.plot(x, y, 'o')
         #     plt.show()
         #     lidar.split_and_merge(x, y)
