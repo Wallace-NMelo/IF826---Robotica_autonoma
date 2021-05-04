@@ -3,12 +3,12 @@
 ### How to run:
 - Open the scene `scene_final.ttt` on CoppeliaSim
 - Start simulation
-- Run the main.py file
+- Run the `main.py` file
 
 
 ### Results:
-- In the main.py we are printing the error between True position and Estimated position
-- To show the results obtained through the split-and-merge algorithm we put some images, in the folder Points extracted from lines extracted by Lidar
+- In the main.py we are printing the error between True position and Estimated position.
+- To show the results obtained through the split-and-merge algorithm we put some images, in the folder **Extracted Points** from lines extracted by Lidar.
 
 
 ### Participants:
