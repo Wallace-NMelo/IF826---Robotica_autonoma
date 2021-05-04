@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-
+import matplotlib.pyplot as plt
 import sim
 
 
@@ -71,3 +71,20 @@ def getPosition(clientID, object_handle, add_noise=False):
 
 def toPolar(x, y):
     return np.sqrt(np.square(x) + np.square(y)), np.arctan(y / x)
+
+
+def plot_animation(estPosition, truePosition, show_animation, hxEst, hxTrue=None):
+
+    if show_animation:
+        plt.cla()
+        # for stopping simulation with the esc key.
+        plt.gcf().canvas.mpl_connect('key_release_event',
+                                     lambda event: [exit(0) if event.key == 'escape' else None])
+
+        # plt.plot(hxTrue[0, :].flatten(),
+        #          hxTrue[1, :].flatten(), "-b")
+        plt.plot(hxEst[0, :].flatten(),
+                 hxEst[1, :].flatten(), "-r")
+        plt.axis("equal")
+        plt.grid(True)
+        plt.pause(0.001)
